@@ -53,7 +53,7 @@ driver = WhatsAPIDriver(
 
 qr = driver.get_qr_plain()
 print(qr)
-
+'''
 contato = Contato.query.get(1)
 
 if contato is None:
@@ -61,7 +61,7 @@ if contato is None:
 else:
     contato.qr_code = qr
     print("QR SALVO")
-
+'''
 img = qrcode.make(qr)
 buffered = BytesIO()
 img.save(buffered, format="png")
