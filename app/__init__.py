@@ -60,12 +60,8 @@ if contato is None:
     print("nao existe")
 else:
     contato.qr_code = qr
+    db.session.commit()
     print("QR SALVO")
-
-img = qrcode.make(qr)
-buffered = BytesIO()
-img.save(buffered, format="png")
-img_str = base64.b64encode(buffered.getvalue())
 
 time.sleep(1)
 print("Waiting for QR")
