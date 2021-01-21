@@ -30,6 +30,8 @@ from app.models.mensagemTable import Mensagem
 from app.controllers import routes
 
 
+
+
 ## API ROUTINE
 
 print("Environment", os.environ)
@@ -63,13 +65,16 @@ else:
     db.session.commit()
     print("QR SALVO")
 
+'''
 time.sleep(1)
 print("Waiting for QR")
 driver.wait_for_login()
 print("Saving session")
 driver.save_firefox_profile(remove_old=False)
 print("Bot started")
+'''
 
+'''
 while True:
     time.sleep(3)
     print("Checking for more messages, status", driver.get_status())
@@ -104,3 +109,4 @@ while True:
                 message.save_media("./")
             else:
                 print("-- Other")
+'''
