@@ -56,7 +56,9 @@ driver = WhatsAPIDriver(
 qr = driver.get_qr_plain()
 print(qr)
 
-contato = Contato.query.get(1)
+contato_id = os.environ['CONTATO_ID']
+contato = Contato.query.get(contato_id)
+print('ID UTILIZADO: ' + contato_id)
 
 if contato is None:
     print("nao existe")
@@ -65,25 +67,25 @@ else:
     db.session.commit()
     print("QR SALVO")
 
-'''
 time.sleep(1)
 print("Waiting for QR")
 driver.wait_for_login()
 print("Saving session")
 driver.save_firefox_profile(remove_old=False)
 print("Bot started")
-'''
 
-'''
 while True:
     time.sleep(3)
     print("Checking for more messages, status", driver.get_status())
+    if driver.get_status() == 'NotLoggedIn':
+        driver.wait_for_login()
 
+    print("User : " + contato.name)
     for contact in driver.get_unread():
         pprint(contact)
         for message in contact.messages:
-            text = "Sei lá"
-            driver.send_message_to_id(message.chat_id, text)
+            #text = "Sei lá"
+            #driver.send_message_to_id(message.chat_id, text)
             print(json.dumps(message.get_js_obj(), indent=4))
             print("class", message.__class__.__name__)
             print("message", message)
@@ -109,4 +111,3 @@ while True:
                 message.save_media("./")
             else:
                 print("-- Other")
-'''
