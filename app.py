@@ -5,7 +5,6 @@ import time
 from pprint import pprint
 from webwhatsapi import WhatsAPIDriver
 
-
 ## API ROUTINE
 
 print("Environment", os.environ)
@@ -27,15 +26,21 @@ driver = WhatsAPIDriver(
     profile=profiledir, client="remote", command_executor=os.environ["SELENIUM"]
 )
 
-time.sleep(5)
-qr = driver.get_qr_plain()
-print(qr)
+
+qr = None
+while qr is None:
+    time.sleep(2)
+    try:
+        qr = driver.get_qr_plain()
+        print(qr)
+    except Exception as e:
+        print(e)
 
 contato_id = os.environ['CONTATO_ID']
 print('ID UTILIZADO: ' + contato_id)
+contato_telefone = os.environ['CONTATO_TELEFONE']
+print('Telefone UTILIZADO: ' + contato_telefone)
 
-
-time.sleep(5)
 print("Waiting for QR")
 driver.wait_for_login()
 print("Saving session")
@@ -43,22 +48,30 @@ driver.save_firefox_profile(remove_old=False)
 print("Bot started")
 
 while True:
-    print("Checking for more messages, status", driver.get_status())
+    time.sleep(3)
+
+    #print("Checking for more messages, status", driver.get_status())
+    # print("User : " + contato_id)
+
     if driver.get_status() == 'NotLoggedIn':
+        print("Not legged In")
         driver.wait_for_login()
 
-    print("User : " + contato_id)
     for contact in driver.get_unread():
-        pprint(contact)
+
+        #pprint(contact)
         for message in contact.messages:
-            if message.safe_content == "!ping":
-                text = "!pong"
-            if message.safe_content == "!pong":
-                text = "!ping"
+            received = str(message.content)
 
-            driver.send_message_to_id(message.chat_id, text)
+            if received.find("!ping") != -1:
+                text = "!pong " + str(contato_id) + "/" + str(contato_telefone) + " -> " + str(message.sender.id) + " / " + str(message.timestamp)
+                driver.send_message_to_id(message.chat_id, text)
 
-            print(json.dumps(message.get_js_obj(), indent=4))
+            if received.find("!pong") != -1:
+                text = "!ping " + str(contato_id) + "/" + str(contato_telefone) + " -> " + str(message.sender.id) + " / " + str(message.timestamp)
+                driver.send_message_to_id(message.chat_id, text)
+
+            #print(json.dumps(message.get_js_obj(), indent=4))
             print("class", message.__class__.__name__)
             print("message", message)
             print("id", message.id)

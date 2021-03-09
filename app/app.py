@@ -5,7 +5,6 @@ import time
 from pprint import pprint
 from webwhatsapi import WhatsAPIDriver
 
-
 ## API ROUTINE
 
 print("Environment", os.environ)
