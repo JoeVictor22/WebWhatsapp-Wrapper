@@ -5,6 +5,50 @@ import time
 from pprint import pprint
 from webwhatsapi import WhatsAPIDriver
 
+
+from sqlalchemy import orm
+from sqlalchemy.ext.declarative import declarative_base
+import sqlalchemy as db
+
+
+
+
+db_uri = "postgresql://postgres:123@postgres_docker:5432/chatbot"
+
+base = declarative_base()
+engine = db.create_engine(db_uri)
+base.metadata.bind = engine
+session = orm.scoped_session(orm.sessionmaker())(bind=engine)
+
+
+
+class Contato(base):
+    __tablename__ = "contato"
+
+    id = db.Column(db.BigInteger, primary_key=True)
+
+    chat_id = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    numero = db.Column(db.String(50), nullable=False)
+    qr_code = db.Column(db.String(255), nullable=True)
+
+
+
+contato_id = os.environ['CONTATO_ID']
+print('ID UTILIZADO: ' + contato_id)
+contato_telefone = os.environ['CONTATO_TELEFONE']
+print('Telefone UTILIZADO: ' + contato_telefone)
+
+
+contato = session.query(Contato).get(contato_id)
+
+if contato is None:
+    print("Registro não encontrado")
+    sys.exit(1)
+
+
+
+
 ## API ROUTINE
 
 print("Environment", os.environ)
@@ -36,13 +80,24 @@ while qr is None:
     except Exception as e:
         print(e)
 
-contato_id = os.environ['CONTATO_ID']
-print('ID UTILIZADO: ' + contato_id)
-contato_telefone = os.environ['CONTATO_TELEFONE']
-print('Telefone UTILIZADO: ' + contato_telefone)
 
-print("Waiting for QR")
-driver.wait_for_login()
+
+contato.qr_code = qr
+try:
+    session.commit()
+except Exception as e:
+    print(e)
+    print("Nao foi possivel salvar o QR")
+    session.rollback()
+    sys.exit(1)
+
+
+
+while(driver.get_status() == 'NotLoggedIn'):
+    print("Waiting for QR")
+    driver.wait_for_login()
+    time.sleep(5)
+
 print("Saving session")
 driver.save_firefox_profile(remove_old=False)
 print("Bot started")
